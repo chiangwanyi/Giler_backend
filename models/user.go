@@ -7,8 +7,8 @@ import (
 )
 
 // CURD Automatic Generated:1,2,3,4,9,10,11
-// Serializer Automatic Generated:1,2,5,6,7,8,9,10,11
-// Update Automatic Generated:6,7,8
+// Serializer Automatic Generated:1,2,6,7,8,9,10,11
+// Update Automatic Generated:6,7,9
 
 // User User 模型
 type User struct {
