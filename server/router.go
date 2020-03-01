@@ -20,5 +20,9 @@ func NewRouter() *gin.Engine {
 		user.DELETE("user/:id", api.DeleteUser)
 	}
 
+	openID := r.Group("/api/v1")
+	{
+		openID.GET("openid", api.GetUserOpenID)
+	}
 	return r
 }

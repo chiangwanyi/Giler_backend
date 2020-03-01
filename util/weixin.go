@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-// SetAccessToken 设置接口调用凭据
-func SetAccessToken() {
+// SetWXAccessToken 设置微信接口调用凭据
+func SetWXAccessToken() {
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + os.Getenv("WX_APPID") + "&secret=" + os.Getenv("WX_SECRET"))
 	if err != nil {
@@ -38,13 +38,13 @@ func SetAccessToken() {
 	_, _ = redis.Set("access_token", param["access_token"], time.Duration(param["expires_in"].(float64))*time.Second).Result()
 }
 
-// GetAccessToken 获取接口调用凭据
-func GetAccessToken() string {
+// GetWXAccessToken 获取微信接口调用凭据
+func GetWXAccessToken() string {
 	redis := db.RedisConn
 	for {
 		val, err := redis.Get("access_token").Result()
 		if err != nil {
-			SetAccessToken()
+			SetWXAccessToken()
 		} else {
 			return val
 		}
