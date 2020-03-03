@@ -2,9 +2,12 @@ package modules
 
 import (
 	"bytes"
+	"encoding/json"
+	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -37,6 +40,7 @@ var upgrader = websocket.Upgrader{
 
 type Client struct {
 	Hub  *Hub
+	ID   bson.ObjectId
 	Conn *websocket.Conn
 	Send chan []byte
 }
@@ -58,7 +62,15 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.Hub.Broadcast <- message
+
+		param := make(map[string]interface{})
+		decode := json.NewDecoder(strings.NewReader(string(message)))
+		_ = decode.Decode(&param)
+
+		c.Hub.Broadcast <- Broadcast{
+			ID:  bson.ObjectIdHex(param["id"].(string)),
+			Msg: param["msg"].(string),
+		}
 	}
 }
 
@@ -106,17 +118,23 @@ func (c *Client) writePump() {
 func ServeWs(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
 		return
 	}
-	//log.Println(conn)
-	client := &Client{Hub: Hubs, Conn: conn, Send: make(chan []byte, 256)}
-	client.Hub.Register <- client
+	id := r.Header.Get("ID")
+	log.Println("当前连接客户端ID：", id)
+	if bson.IsObjectIdHex(id) {
+		client := &Client{
+			Hub:  Hubs,
+			ID:   bson.ObjectIdHex(id),
+			Conn: conn,
+			Send: make(chan []byte, 256),
+		}
+		client.Hub.Register <- client
 
-	//log.Println(Hubs.Clients)
+		// Allow collection of memory referenced by the caller by doing all work in
+		// new goroutines.
+		go client.writePump()
+		go client.readPump()
 
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
-	go client.writePump()
-	go client.readPump()
+	}
 }

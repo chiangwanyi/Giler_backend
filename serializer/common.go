@@ -36,7 +36,7 @@ func BadParameterErrorResponse(err error) Response {
 	return Response{
 		Status: BadParameterError,
 		Data:   nil,
-		Msg:    "参数或字段匹配错误：请检查输入",
+		Msg:    "参数或字段匹配错误：请检查参数",
 		Error:  err,
 	}
 }
