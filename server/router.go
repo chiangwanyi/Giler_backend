@@ -2,14 +2,13 @@ package server
 
 import (
 	"giler-backend/api"
-	"giler-backend/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
 func NewRouter() *gin.Engine {
 	r := gin.Default()
 
-	r.Use(middlewares.Cors())
+	//r.Use(middlewares.Cors())
 
 	user := r.Group("/api/v1")
 	{
@@ -24,5 +23,11 @@ func NewRouter() *gin.Engine {
 	{
 		openID.GET("openid", api.GetUserOpenID)
 	}
+
+	ws := r.Group("/api/v2")
+	{
+		ws.GET("ws", api.ConnWebSocket)
+	}
+
 	return r
 }

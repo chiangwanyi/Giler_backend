@@ -8,6 +8,7 @@ import (
 	"giler-backend/util"
 	"github.com/qiniu/api.v7/v7/storage"
 	"net/http"
+	"os"
 )
 
 // CreateUserService 创建 User 服务
@@ -62,7 +63,7 @@ func (service *CreateUserService) Create() serializer.Response {
 		OpenID:   service.OpenID,
 		Nickname: service.Nickname,
 		Gender:   service.Gender,
-		Avatar:   "http://q6ck3a2ag.bkt.clouddn.com/" + ret.Key,
+		Avatar:   os.Getenv("QINIUC_URL") + ret.Key,
 	}
 
 	if err := service.Valid(); err != nil {

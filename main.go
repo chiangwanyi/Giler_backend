@@ -2,6 +2,7 @@ package main
 
 import (
 	"giler-backend/config"
+	"giler-backend/modules"
 	"giler-backend/server"
 	"log"
 	"os"
@@ -9,6 +10,8 @@ import (
 
 func main(){
 	config.Init()
+
+	modules.NewHub()
 
 	router := server.NewRouter()
 

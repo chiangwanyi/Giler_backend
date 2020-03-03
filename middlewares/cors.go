@@ -27,6 +27,7 @@ func Cors() gin.HandlerFunc {
 			if regexp.MustCompile(`^http://192.168`).MatchString(origin) {
 				return true
 			}
+
 			return false
 		}
 	}
