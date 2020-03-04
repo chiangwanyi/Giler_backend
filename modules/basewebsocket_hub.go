@@ -7,14 +7,14 @@ import (
 	"log"
 )
 
-var Hubs *Hub
+var BaseHubs *BaseHub
 
 type Broadcast struct {
 	ID  bson.ObjectId
 	Msg string
 }
 
-type Hub struct {
+type BaseHub struct {
 	Clients map[bson.ObjectId]*Client
 	//Clients    map[*Client]bool
 	Broadcast  chan Broadcast
@@ -22,18 +22,18 @@ type Hub struct {
 	Unregister chan *Client
 }
 
-func NewHub() {
-	Hubs = &Hub{
+func NewBaseHub() {
+	BaseHubs = &BaseHub{
 		Clients: make(map[bson.ObjectId]*Client),
 		//Clients:    make(map[*Client]bool),
 		Broadcast:  make(chan Broadcast),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 	}
-	go Hubs.Run()
+	go BaseHubs.Run()
 }
 
-func (h *Hub) Run() {
+func (h *BaseHub) Run() {
 	for {
 		select {
 		case client := <-h.Register:
@@ -46,8 +46,8 @@ func (h *Hub) Run() {
 			log.Println("当前客户端连接数：", len(h.Clients))
 		case client := <-h.Unregister:
 			log.Printf("有客户端退出：%v\t客户端ID：%v\n", client, client.ID.Hex())
-			if err := h.Clients[client.ID].Conn.WriteMessage(websocket.PingMessage, nil);err != nil {
-				log.Println(err)
+			if err := h.Clients[client.ID].Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				log.Printf("客户端异常状态：%v", err)
 				delete(h.Clients, client.ID)
 			}
 			close(client.Send)
@@ -65,14 +65,6 @@ func (h *Hub) Run() {
 					}
 				}
 			}
-			//for client := range h.Clients {
-			//	select {
-			//	case client.Send <- message:
-			//	default:
-			//		close(client.Send)
-			//		delete(h.Clients, client)
-			//	}
-			//}
 		}
 	}
 }

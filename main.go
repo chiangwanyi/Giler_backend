@@ -11,7 +11,7 @@ import (
 func main(){
 	config.Init()
 
-	modules.NewHub()
+	modules.NewBaseHub()
 
 	router := server.NewRouter()
 

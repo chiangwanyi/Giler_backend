@@ -39,7 +39,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type Client struct {
-	Hub  *Hub
+	Hub  *BaseHub
 	ID   bson.ObjectId
 	Conn *websocket.Conn
 	Send chan []byte
@@ -109,7 +109,10 @@ func (c *Client) writePump() {
 		case <-ticker.C:
 			_ = c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				log.Printf("心跳：%v 连接中断\t%v", c.ID.Hex(), err)
 				return
+			} else {
+				log.Printf("心跳：%v 连接正常", c.ID.Hex())
 			}
 		}
 	}
@@ -124,7 +127,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 	log.Println("当前连接客户端ID：", id)
 	if bson.IsObjectIdHex(id) {
 		client := &Client{
-			Hub:  Hubs,
+			Hub:  BaseHubs,
 			ID:   bson.ObjectIdHex(id),
 			Conn: conn,
 			Send: make(chan []byte, 256),
@@ -135,6 +138,5 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 		// new goroutines.
 		go client.writePump()
 		go client.readPump()
-
 	}
 }
